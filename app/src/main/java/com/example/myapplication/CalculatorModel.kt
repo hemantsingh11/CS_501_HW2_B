@@ -80,7 +80,9 @@ class CalculatorModel {
 
         fun sqrt(input1: String): String {
             try {
+                println("test1: "+input1)
                 val number1 = solve(input1)
+                println("test2: "+number1)
                 return Math.sqrt(number1).toString()
             } catch (e: NumberFormatException) {
                 println("Error: One or both of the inputs are not valid numbers.")
@@ -133,8 +135,13 @@ class CalculatorModel {
                 }
                 return result
             }
-            System.out.println(input1.toDouble())
-            return input1.toDouble()
+            if (input1.length>0)
+            {
+                System.out.println(input1.toDouble())
+                return input1.toDouble()
+            }
+            else
+                return 0.0
         }
     }
 }

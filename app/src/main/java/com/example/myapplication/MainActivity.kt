@@ -1,12 +1,10 @@
 package com.example.myapplication
 
-import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
-import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,6 +18,13 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        if (savedInstanceState != null){
+            clear = savedInstanceState.getBoolean("clear")
+            operator = savedInstanceState.getBoolean("operator")
+            decimal = savedInstanceState.getBoolean("decimal")
+            binding.TvInputWindow.setText(savedInstanceState.getString("expression"))
+        }
 
         initialise()
         setNumberListeners()
@@ -35,6 +40,7 @@ class MainActivity : AppCompatActivity() {
                 {
                     binding.TvInputWindow.setText("")
                     clear = false
+
                     binding.TvInputWindow.append("0.")
                 }
                 else if (operator)
@@ -53,8 +59,7 @@ class MainActivity : AppCompatActivity() {
     private fun setClearListener() {
         binding.BtnClear.setOnClickListener {
             initialise()
-            clear = true
-            operator = false
+            binding.TvErrorWindow!!.visibility = View.INVISIBLE
         }
 
         binding.BtnBackBtn.setOnClickListener {
@@ -104,9 +109,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 catch (exc: Throwable)
                 {
-                    binding.TvInputWindow.setText(
-                        outputParser("NaN")
-                    )
+                    binding.TvErrorWindow!!.visibility = View.VISIBLE
+//                    binding.TvInputWindow.setText(outputParser("NaN"))
+                    initialise()
                 }
             }
         }
@@ -132,16 +137,27 @@ class MainActivity : AppCompatActivity() {
                 "sqrt" -> {
                     binding.TvResultWindow.setText("")
                  try {
-                        binding.TvInputWindow.setText(outputParser(CalculatorModel.sqrt(binding.TvInputWindow.text.toString())))
-                    } catch (exc: Throwable)
+                     var value = outputParser(CalculatorModel.sqrt(binding.TvInputWindow.text.toString()))
+
+                     if(value.toDouble().isNaN())
+                     {
+                         binding.TvErrorWindow!!.visibility = View.VISIBLE
+                         binding.TvResultWindow.setText("NaN")
+                     }
+                     else
+                        binding.TvInputWindow.setText(value)
+                 } catch (exc: Throwable)
                     {
+                        binding.TvErrorWindow!!.visibility = View.VISIBLE
                         binding.TvResultWindow.setText("NaN")
                     }
                 }
                 else -> Toast.makeText(this, "INVALID", Toast.LENGTH_SHORT).show()
             }
-            if(s != "sqrt")
+            if(s != "sqrt") {
+                binding.TvErrorWindow!!.visibility = View.INVISIBLE
                 operator = true
+            }
             decimal=false
         }
     }
@@ -185,6 +201,7 @@ class MainActivity : AppCompatActivity() {
             clear = false
         }
 
+        binding.TvErrorWindow!!.visibility = View.INVISIBLE
         binding.TvInputWindow.append(i.toString())
         while (binding.TvInputWindow.text[0] == '0')
             binding.TvInputWindow.setText(binding.TvInputWindow.text.drop(1))
@@ -196,6 +213,7 @@ class MainActivity : AppCompatActivity() {
             )
         } catch (exc: Throwable)
         {
+            binding.TvErrorWindow!!.visibility = View.VISIBLE
             binding.TvResultWindow.setText("NaN")
         }
         operator = false
@@ -204,6 +222,9 @@ class MainActivity : AppCompatActivity() {
     private fun initialise() {
         binding.TvInputWindow.setText("0.0")
         binding.TvResultWindow.setText("")
+        clear = true
+        operator = false
+        decimal = false
     }
     fun solve(input1: String): Double {
         var div = input1.split("-")
@@ -251,6 +272,15 @@ class MainActivity : AppCompatActivity() {
         }
         System.out.println(input1.toDouble())
         return input1.toDouble()
+    }
+
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        savedInstanceState.putString("expression", binding.TvInputWindow.text.toString())
+        savedInstanceState.putBoolean("clear", clear)
+        savedInstanceState.putBoolean("operator", operator)
+        savedInstanceState.putBoolean("decimal", decimal)
     }
 
 }
