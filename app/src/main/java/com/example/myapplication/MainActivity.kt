@@ -131,7 +131,12 @@ class MainActivity : AppCompatActivity() {
                 "%" -> binding.TvInputWindow.append(" % ")
                 "sqrt" -> {
                     binding.TvResultWindow.setText("")
-                    binding.TvInputWindow.setText(outputParser(CalculatorModel.sqrt(binding.TvInputWindow.text.toString())))
+                 try {
+                        binding.TvInputWindow.setText(outputParser(CalculatorModel.sqrt(binding.TvInputWindow.text.toString())))
+                    } catch (exc: Throwable)
+                    {
+                        binding.TvResultWindow.setText("NaN")
+                    }
                 }
                 else -> Toast.makeText(this, "INVALID", Toast.LENGTH_SHORT).show()
             }
